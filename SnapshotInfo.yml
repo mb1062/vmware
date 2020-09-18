@@ -1,0 +1,41 @@
+---
+- name: Gather Snapshot information
+  hosts: all
+  gather_facts: false
+  vars_prompt:
+   - name: "VSphere"
+     prompt: "Enter VSphere Hostname or IP Address"
+     private: no
+   - name: "DataCenter"
+     prompt: "Enter VMware DataCenter name"
+     private: no
+   - name: "Username"
+     prompt: "Enter Your VMware Username"
+     private: no
+   - name: "Password"
+     prompt: "Enter Your VMware Password"
+   - name: "VMname"
+     prompt: "Enter Linux Server Hostname"
+     private: no
+  tasks:
+   - name: Find Guest's Folder using name
+     vmware_guest_find:
+       hostname: "{{ VSphere }}"
+       username: "{{ Username }}"
+       password: "{{ Password }}"
+       validate_certs: no
+       name: "{{ VMname }}"
+     delegate_to: localhost
+     register: vm_folder
+   - name: Gathering Snapshot information
+     vmware_guest_snapshot_info:
+       hostname: "{{VSphere}}"
+       username: "{{Username}}"
+       password: "{{Password}}"
+       name: "{{VMname}}"
+       datacenter: "{{DataCenter}}"
+       folder: "{{ vm_folder }}"
+       validate_certs: no
+     delegate_to: localhost
+     register: snapshot_info
+   - debug: msg="Snapshot information of the virtual machine is {{snapshot_info}}"
